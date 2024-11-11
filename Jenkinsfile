@@ -29,7 +29,7 @@ pipeline {
        }
        stage("Docker Build"){
           steps{
-              sh "docker build -t jenkinspipeline ."
+              sh "sudo docker build -t jenkinspipeline ."
          }
        }
     }
