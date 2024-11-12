@@ -71,11 +71,11 @@ pipeline {
 
                     // Clean up old images on Docker Hub using Docker Hub API
                     sh """
-                        curl -s -u ${DOCKERHUB_CREDENTIALS_USR}:${DOCKERHUB_CREDENTIALS_PSW} \
+                        curl -s -u $DOCKERHUB_CREDENTIALS_USR:$DOCKERHUB_CREDENTIALS_PSW \
                         "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
                         jq -r '.results[].name' | \
                         grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                        xargs -I {} curl -X DELETE -u ${DOCKERHUB_CREDENTIALS_USR}:${DOCKERHUB_CREDENTIALS_PSW} \
+                        xargs -I {} curl -X DELETE -u $DOCKERHUB_CREDENTIALS_USR:$DOCKERHUB_CREDENTIALS_PSW \
                         "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
                     """
                 }
