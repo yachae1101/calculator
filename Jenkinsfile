@@ -2,7 +2,6 @@ pipeline {
     agent any
     environment{
        DOCKERHUB_CREDENTIALS = credentials("dockerhub-username-password")
-       BUILD_NUMBER = ${env.BUILD_NUMBER}
     }
     stages {
         stage("Permission") {
@@ -33,7 +32,7 @@ pipeline {
        }
        stage("Docker Image Build"){
          steps{
-             sh 'docker build -t yachae1101/calculator:BUILD_NUMBER .'
+             sh 'docker build -t yachae1101/calculator:${env.BUILD_NUMBER} .'
          }
        }
        stage('Docker Hub Login'){
@@ -43,12 +42,12 @@ pipeline {
        }
        stage('Docker Hub Push'){
          steps{
-             sh 'docker push yachae1101/calculator:BUILD_NUMBER'
+             sh 'docker push yachae1101/calculator:${env.BUILD_NUMBER}'
          }
        }
        stage('Deploy'){
           steps{
-              sh "docker run -d --rm -p 8765:8080 --name calculator yachae1101/calculator:BUILD_NUMBER"
+              sh 'docker run -d --rm -p 8765:8080 --name calculator yachae1101/calculator:${env.BUILD_NUMBER}'
           }
        }
        stage('Acceptance Test'){
@@ -59,7 +58,7 @@ pipeline {
        }
        stage('Clean Up'){
          steps{
-             docker stop calculator
+             sh 'docker stop calculator'
          }
        }
     }
