@@ -45,5 +45,10 @@ pipeline {
              sh 'docker push yachae1101/calculator:latest'
          }
        }
+       stage('Deploy'){
+          steps{
+              sh "docker run -d --rm -p 8765:8080 --name calculator yachae1101/calculator"
+          }
+       }
     }
 }
