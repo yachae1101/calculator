@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment{
+       DOCKERHUB_CREDENTIALS = credentials("dockerhub-username-password")
+    }
     stages {
         stage("Permission") {
             steps {
@@ -27,9 +30,14 @@ pipeline {
              sh "./gradlew clean build"
          }
        }
-       stage("Docker Build"){
-          steps{
-              sh "docker build -t jenkinspipeline ."
+       stage("Docker Image Build"){
+         steps{
+             sh 'docker build -t yachae1101@calculator .'
+         }
+       }
+       stage('Docker Hub Login'){
+         steps{
+             sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
          }
        }
     }
