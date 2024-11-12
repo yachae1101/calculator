@@ -67,7 +67,7 @@ pipeline {
                     // Delete older images locally, keeping only the current and previous build images
                     sh """
                         docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
-                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                        grep -Ev '^(${imageTag}|${previousTag}|latest)\$' | \
                         xargs -I {} docker rmi -f yachae1101/calculator:{}
                     """
 
@@ -79,7 +79,7 @@ pipeline {
                             curl -s -H "Authorization: JWT \$DOCKERHUB_TOKEN" \
                             "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
                             jq -r '.results[].name' | \
-                            grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                            grep -Ev '^(${imageTag}|${previousTag}|latest)\$' | \
                             xargs -I {} curl -X DELETE -H "Authorization: JWT \$DOCKERHUB_TOKEN" \
                             "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
                         """
