@@ -56,31 +56,31 @@ pipeline {
              sh 'chmod +x acceptance_test.sh && ./acceptance_test.sh'
          }
        }
-       stage('Clean Up Docker Images') {
-           steps {
-               script {
-                   def imageTag = "${env.BUILD_NUMBER}"
-                   def previousTag = (imageTag.toInteger() - 1).toString()
+        stage('Clean Up Docker Images') {
+            steps {
+                script {
+                    def imageTag = "${env.BUILD_NUMBER}"
+                    def previousTag = (imageTag.toInteger() - 1).toString()
 
-                   // Delete older images locally, keeping only the current and previous build images
-                   sh """
-                       docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
-                       grep -Ev '^(${imageTag}|${previousTag})$' | \
-                       xargs -I {} docker rmi -f yachae1101/calculator:{}
-                   """
+                    // Delete older images locally, keeping only the current and previous build images
+                    sh """
+                        docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
+                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                        xargs -I {} docker rmi -f yachae1101/calculator:{}
+                    """
 
-                   // Clean up old images on Docker Hub using Docker Hub API
-                   sh """
-                       curl -s -u "your_dockerhub_username:your_dockerhub_token" \
-                       "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
-                       jq -r '.results[].name' | \
-                       grep -Ev '^(${imageTag}|${previousTag})$' | \
-                       xargs -I {} curl -X DELETE -u "your_dockerhub_username:your_dockerhub_token" \
-                       "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
-                   """
-               }
-           }
-       }
+                    // Clean up old images on Docker Hub using Docker Hub API
+                    sh """
+                        curl -s -u "your_dockerhub_username:your_dockerhub_token" \
+                        "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
+                        jq -r '.results[].name' | \
+                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                        xargs -I {} curl -X DELETE -u "your_dockerhub_username:your_dockerhub_token" \
+                        "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
+                    """
+                }
+            }
+        }
     }
     post{
        always{
