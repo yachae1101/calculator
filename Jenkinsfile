@@ -62,16 +62,15 @@ pipeline {
                     def imageTag = "${env.BUILD_NUMBER}"
                     def previousTag = (imageTag.toInteger() - 1).toString()
 
+                    // Delete older images locally, keeping only the current and previous build images
+                    sh """
+                        docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
+                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                        xargs -I {} docker rmi -f yachae1101/calculator:{}
+                    """
+
                     // 환경 변수로 Docker Hub 사용자 이름과 API 토큰 설정
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-username-password', usernameVariable: 'DOCKERHUB_USR', passwordVariable: 'DOCKERHUB_TOKEN')]) {
-
-                        // Delete older images locally, keeping only the current and previous build images
-                        sh """
-                            docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
-                            grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                            xargs -I {} docker rmi -f yachae1101/calculator:{}
-                        """
-
                         // Clean up old images on Docker Hub using Docker Hub API with token
                         sh """
                             # Get the list of tags from Docker Hub and delete older images except the current and previous ones
