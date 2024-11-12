@@ -74,11 +74,12 @@ pipeline {
 
                         // Clean up old images on Docker Hub using Docker Hub API with token
                         sh """
-                            curl -s -u \$DOCKERHUB_USR:\$DOCKERHUB_TOKEN \
+                            # Get the list of tags from Docker Hub and delete older images except the current and previous ones
+                            curl -s -H "Authorization: JWT \$DOCKERHUB_TOKEN" \
                             "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
                             jq -r '.results[].name' | \
                             grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                            xargs -I {} curl -X DELETE -u \$DOCKERHUB_USR:\$DOCKERHUB_TOKEN \
+                            xargs -I {} curl -X DELETE -H "Authorization: JWT \$DOCKERHUB_TOKEN" \
                             "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
                         """
                     }
