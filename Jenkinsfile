@@ -32,7 +32,7 @@ pipeline {
        }
        stage("Docker Image Build"){
          steps{
-             sh "docker build -t yachae1101/calculator:${env.BUILD_NUMBER} ."
+             sh "docker build -t yachae1101/calculator ."
          }
        }
        stage('Docker Hub Login'){
@@ -42,12 +42,12 @@ pipeline {
        }
        stage('Docker Hub Push'){
          steps{
-             sh "docker push yachae1101/calculator:${env.BUILD_NUMBER}"
+             sh "docker push yachae1101/calculator:latest"
          }
        }
        stage('Deploy'){
           steps{
-              sh "docker run -d --rm -p 8765:8080 --name calculator yachae1101/calculator:${env.BUILD_NUMBER}"
+              sh "docker run -d --rm -p 8765:8080 --name calculator yachae1101/calculator"
           }
        }
        stage('Acceptance Test'){
@@ -56,35 +56,6 @@ pipeline {
              sh 'chmod +x acceptance_test.sh && ./acceptance_test.sh'
          }
        }
-        stage('Clean Up Docker Images') {
-            steps {
-                script {
-                    def imageTag = "${env.BUILD_NUMBER}"
-                    def previousTag = (imageTag.toInteger() - 1).toString()
-
-                    // Delete older images locally, keeping only the current and previous build images
-                    sh """
-                        docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
-                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                        xargs -I {} docker rmi -f yachae1101/calculator:{}
-                    """
-
-                    // 환경 변수로 Docker Hub 사용자 이름과 API 토큰 설정
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-username-password', usernameVariable: 'DOCKERHUB_USR', passwordVariable: 'DOCKERHUB_TOKEN')]) {
-                        // Clean up old images on Docker Hub using Docker Hub API with token
-                        sh """
-                            # Get the list of tags from Docker Hub and delete older images except the current and previous ones
-                            curl -s -H "Authorization: JWT \$DOCKERHUB_TOKEN" \
-                            "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
-                            jq -r '.results[].name' | \
-                            grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                            xargs -I {} curl -X DELETE -H "Authorization: JWT \$DOCKERHUB_TOKEN" \
-                            "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
-                        """
-                    }
-                }
-            }
-        }
     }
     post{
        always{
