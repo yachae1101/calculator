@@ -62,22 +62,26 @@ pipeline {
                     def imageTag = "${env.BUILD_NUMBER}"
                     def previousTag = (imageTag.toInteger() - 1).toString()
 
-                    // Delete older images locally, keeping only the current and previous build images
-                    sh """
-                        docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
-                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                        xargs -I {} docker rmi -f yachae1101/calculator:{}
-                    """
+                    // 환경 변수로 Docker Hub 사용자 이름과 비밀번호 설정
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-username-password', usernameVariable: 'DOCKERHUB_USR', passwordVariable: 'DOCKERHUB_PSW')]) {
 
-                    // Clean up old images on Docker Hub using Docker Hub API
-                    sh """
-                        curl -s -u $DOCKERHUB_CREDENTIALS_USR:$DOCKERHUB_CREDENTIALS_PSW \
-                        "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
-                        jq -r '.results[].name' | \
-                        grep -Ev '^(${imageTag}|${previousTag})\$' | \
-                        xargs -I {} curl -X DELETE -u $DOCKERHUB_CREDENTIALS_USR:$DOCKERHUB_CREDENTIALS_PSW \
-                        "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
-                    """
+                        // Delete older images locally, keeping only the current and previous build images
+                        sh """
+                            docker images --filter=reference='yachae1101/calculator:*' --format '{{.Tag}}' | \
+                            grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                            xargs -I {} docker rmi -f yachae1101/calculator:{}
+                        """
+
+                        // Clean up old images on Docker Hub using Docker Hub API
+                        sh """
+                            curl -s -u \$DOCKERHUB_USR:\$DOCKERHUB_PSW \
+                            "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/" | \
+                            jq -r '.results[].name' | \
+                            grep -Ev '^(${imageTag}|${previousTag})\$' | \
+                            xargs -I {} curl -X DELETE -u \$DOCKERHUB_USR:\$DOCKERHUB_PSW \
+                            "https://hub.docker.com/v2/repositories/yachae1101/calculator/tags/{}"
+                        """
+                    }
                 }
             }
         }
