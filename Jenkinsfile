@@ -27,10 +27,10 @@ pipeline {
              sh "./gradlew clean build"
          }
        }
-       stage("Docker Build"){
-          steps{
-              sh "sudo docker build -t jenkinspipeline ."
-         }
-       }
+//        stage("Docker Build"){
+//           steps{
+//               sh "docker build -t jenkinspipeline ."
+//          }
+//        }
     }
 }
