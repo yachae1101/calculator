@@ -32,6 +32,5 @@ pipeline {
               sh "docker build -t jenkinspipeline ."
          }
        }
-
     }
 }
