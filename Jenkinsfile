@@ -32,7 +32,7 @@ pipeline {
        }
        stage("Docker Image Build"){
          steps{
-             sh 'docker build -t yachae1101@calculator .'
+             sh 'docker build -t yachae1101/calculator .'
          }
        }
        stage('Docker Hub Login'){
