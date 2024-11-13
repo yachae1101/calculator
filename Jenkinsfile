@@ -4,6 +4,11 @@ pipeline {
        DOCKERHUB_CREDENTIALS = credentials("dockerhub-username-password")
     }
     stages {
+        stage("java version 확인") {
+            steps {
+                sh "java -version"
+            }
+        }
         stage("Permission") {
             steps {
                 sh "chmod +x ./gradlew"
